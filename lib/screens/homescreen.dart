@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -16,6 +18,7 @@ class _RocketSocketState extends State<RocketSocket> {
   LatLng? currentLocation;
   bool? isTransmitting = false;
   WSServices wsServices = WSServices();
+  Timer? timer;
 
   @override
   void initState() {
@@ -59,16 +62,29 @@ class _RocketSocketState extends State<RocketSocket> {
         currentLocation!.longitude.toString(),
       );
     } else {
-      debugPrint("Location not available");
+      debugPrint("Location not available, sending kolkata location temp");
+      wsServices.sendMsg(
+        "22.5726",
+        "88.3639",
+      );
     }
+  }
+
+  void startTransmitting() {
+    // Temporary timer for testing
+    debugPrint("Start Transmitting");
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      transmitLocation();
+    });
+  }
+
+  void stopTransmiting() {
+    debugPrint("Stop Transmitting");
+    timer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isTransmitting!) {
-      Future.delayed(const Duration(seconds: 1), transmitLocation);
-    }
-
     return Scaffold(
         body: SafeArea(
             child: Container(
@@ -132,6 +148,7 @@ class _RocketSocketState extends State<RocketSocket> {
                 onPressed: () {
                   setState(() {
                     isTransmitting = !isTransmitting!;
+                    isTransmitting! ? startTransmitting() : stopTransmiting();
                   });
                 },
                 style: ElevatedButton.styleFrom(
