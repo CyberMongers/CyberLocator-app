@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -98,23 +97,37 @@ class _RocketSocketState extends State<RocketSocket> {
           const SizedBox(
             height: 10,
           ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                isTransmitting = !isTransmitting!;
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isTransmitting! ? Colors.red : Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Card(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    child: Text("RoomID: 123456"),
+                  )),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isTransmitting = !isTransmitting!;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isTransmitting! ? Colors.red : Colors.green,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                child: Text(
+                  isTransmitting! ? "Stop Transmitting" : "Start Transmitting",
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
-            ),
-            child: Text(
-              isTransmitting! ? "Stop Transmitting" : "Start Transmitting",
-              style: const TextStyle(color: Colors.white),
-            ),
+            ],
           )
         ],
       ),
