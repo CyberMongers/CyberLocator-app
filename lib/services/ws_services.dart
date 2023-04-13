@@ -40,9 +40,7 @@ class WSServices {
     // ScrollController scroll,
   ) {
     try {
-      // channel = IOWebSocketChannel.connect("${_baseurl}rooms/$roomId/");
-      // HardCoded roomId
-      channel = IOWebSocketChannel.connect("${_baseurl}rooms/123456/");
+      channel = IOWebSocketChannel.connect("${_baseurl}rooms/$roomId/");
       //   channel.stream.listen((message) {
       //     debugPrint("Socket Message: $message");
       //     var jsonData = jsonDecode(message);
@@ -62,12 +60,13 @@ class WSServices {
   }
 
   Future<void> sendMsg(
-    BuildContext context,
-    String textmsg,
+    // BuildContext context,
+    String lat,
+	String long
   ) async {
-    String message = '{"message":"$textmsg"}';
+    String message = '{"latitude":"$lat","longitude":"$long"}';
     MessageData msgdata = MessageData(
-      message: textmsg,
+      message: message,
       isme: true,
     );
     // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
