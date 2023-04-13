@@ -19,6 +19,7 @@ class _RocketSocketState extends State<RocketSocket> {
   bool? isTransmitting = false;
   WSServices wsServices = WSServices();
   Timer? timer;
+  List locationHistory = [];
 
   @override
   void initState() {
@@ -26,6 +27,12 @@ class _RocketSocketState extends State<RocketSocket> {
     isTransmitting = false;
     // HardCoded roomId
     wsServices.connectRoomSocket(context, "123456");
+    Geolocator.isLocationServiceEnabled().then((value) async {
+      if (!value) {
+        await Geolocator.requestPermission();
+        debugPrint("Requesting Location permission");
+      }
+    });
 
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -57,12 +64,15 @@ class _RocketSocketState extends State<RocketSocket> {
   void transmitLocation() {
     if (currentLocation != null) {
       debugPrint("Location available");
+      locationHistory.add(
+          "Latitude: ${currentLocation!.latitude.toString()}, Longitude: ${currentLocation!.longitude.toString()}");
       wsServices.sendMsg(
         currentLocation!.latitude.toString(),
         currentLocation!.longitude.toString(),
       );
     } else {
       debugPrint("Location not available, sending kolkata location temp");
+      locationHistory.add("Location not available, sending fake location");
       wsServices.sendMsg(
         "22.5726",
         "88.3639",
@@ -74,7 +84,9 @@ class _RocketSocketState extends State<RocketSocket> {
     // Temporary timer for testing
     debugPrint("Start Transmitting");
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      transmitLocation();
+      setState(() {
+        transmitLocation();
+      });
     });
   }
 
@@ -95,7 +107,7 @@ class _RocketSocketState extends State<RocketSocket> {
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(15),
               child: FlutterMap(
                 mapController: mapController,
                 options: MapOptions(
@@ -131,6 +143,30 @@ class _RocketSocketState extends State<RocketSocket> {
             ),
           ),
           const SizedBox(
+            height: 15,
+          ),
+          Container(
+            height: 200,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: locationHistory.isEmpty
+                ? const Center(
+                    child: const Text("No location transmitted yet!"))
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: locationHistory.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: const Icon(Icons.wifi_tethering_rounded),
+                        title: Text(locationHistory[index].toString()),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(
             height: 10,
           ),
           Row(
@@ -149,6 +185,8 @@ class _RocketSocketState extends State<RocketSocket> {
                   setState(() {
                     isTransmitting = !isTransmitting!;
                     isTransmitting! ? startTransmitting() : stopTransmiting();
+                    locationHistory.add(
+                        "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
                   });
                 },
                 style: ElevatedButton.styleFrom(
