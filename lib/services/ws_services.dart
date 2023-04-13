@@ -41,18 +41,18 @@ class WSServices {
   ) {
     try {
       channel = IOWebSocketChannel.connect("${_baseurl}rooms/$roomId/");
-      //   channel.stream.listen((message) {
-      //     debugPrint("Socket Message: $message");
-      //     var jsonData = jsonDecode(message);
-      //     MessageData msgdata =
-      //         MessageData(message: jsonData["message"], isme: false);
-      //     // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
-      //     // scroll.jumpTo(scroll.position.maxScrollExtent);
-      //   }, onError: (error) {
-      //     showSnackBar(context, "Something went wrong...change room id");
-      //     Navigator.of(context).pop();
-      //     log(error.toString());
-      //   });
+      channel.stream.listen((message) {
+        debugPrint("Socket Message: $message");
+        //   var jsonData = jsonDecode(message);
+        //   MessageData msgdata =
+        //   MessageData(message: jsonData["message"], isme: false);
+        // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
+        // scroll.jumpTo(scroll.position.maxScrollExtent);
+      }, onError: (error) {
+        showSnackBar(context, "Something went wrong...change room id");
+        //   Navigator.of(context).pop();
+        log(error.toString());
+      });
     } catch (e) {
       showSnackBar(context, "Something went wrong...");
       log(e.toString());
@@ -62,13 +62,14 @@ class WSServices {
   Future<void> sendMsg(
     // BuildContext context,
     String lat,
-	String long
+    String long,
   ) async {
     String message = '{"latitude":"$lat","longitude":"$long"}';
-    MessageData msgdata = MessageData(
-      message: message,
-      isme: true,
-    );
+    debugPrint(message);
+    // MessageData msgdata = MessageData(
+    //   message: message,
+    //   isme: true,
+    // );
     // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
     channel.sink.add(message);
   }
