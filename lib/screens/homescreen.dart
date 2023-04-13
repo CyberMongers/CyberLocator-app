@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:socket_rocket/services/ws_services.dart';
 
 class RocketSocket extends StatefulWidget {
   const RocketSocket({super.key});
@@ -14,11 +15,14 @@ class _RocketSocketState extends State<RocketSocket> {
   final mapController = MapController();
   LatLng? currentLocation;
   bool? isTransmitting = false;
+  WSServices wsServices = WSServices();
 
   @override
   void initState() {
     super.initState();
     isTransmitting = false;
+    // HardCoded roomId
+    wsServices.connectRoomSocket(context, "123456");
 
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
@@ -47,8 +51,24 @@ class _RocketSocketState extends State<RocketSocket> {
     mapController.dispose();
   }
 
+  void transmitLocation() {
+    if (currentLocation != null) {
+      debugPrint("Location available");
+      wsServices.sendMsg(
+        currentLocation!.latitude.toString(),
+        currentLocation!.longitude.toString(),
+      );
+    } else {
+      debugPrint("Location not available");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isTransmitting!) {
+      Future.delayed(const Duration(seconds: 1), transmitLocation);
+    }
+
     return Scaffold(
         body: SafeArea(
             child: Container(
