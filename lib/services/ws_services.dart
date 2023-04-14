@@ -64,7 +64,9 @@ class WSServices {
     String lat,
     String long,
   ) async {
-    String message = '{"latitude":"$lat","longitude":"$long"}';
+    String userId = "12312lkj3lk";
+    String message =
+        '{ "message" : { "userId" : "$userId", "latitude":"$lat", "longitude" : "$long", "location": [ "$lat", "$long" ] }}';
     debugPrint(message);
     // MessageData msgdata = MessageData(
     //   message: message,
