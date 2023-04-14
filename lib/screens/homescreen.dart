@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:socket_rocket/services/ws_services.dart';
+import 'package:socket_rocket/utils/utils.dart';
 
 class RocketSocket extends StatefulWidget {
   const RocketSocket({super.key});
@@ -20,10 +21,12 @@ class _RocketSocketState extends State<RocketSocket> {
   WSServices wsServices = WSServices();
   Timer? timer;
   List locationHistory = [];
+  String? userId;
+
 
   @override
   void initState() {
-    super.initState();
+    setUserId();
     isTransmitting = false;
     // HardCoded roomId
     wsServices.connectRoomSocket(context, "123456");
@@ -34,12 +37,24 @@ class _RocketSocketState extends State<RocketSocket> {
       }
     });
     getCurrentLocation();
+    super.initState();
   }
 
   @override
   void dispose() {
-    super.dispose();
     mapController.dispose();
+    wsServices.channel.sink.close();
+    super.dispose();
+  }
+
+  void setUserId() async {
+    userId = await getUserId();
+    if (userId == null) {
+      createUserId();
+      userId = await getUserId();
+    }
+  }
+
   }
 
   void getCurrentLocation() {
@@ -70,6 +85,7 @@ class _RocketSocketState extends State<RocketSocket> {
       locationHistory.add(
           "Latitude: ${currentLocation!.latitude.toString()}, Longitude: ${currentLocation!.longitude.toString()}");
       wsServices.sendMsg(
+        userId!,
         currentLocation!.latitude.toString(),
         currentLocation!.longitude.toString(),
       );
@@ -77,6 +93,7 @@ class _RocketSocketState extends State<RocketSocket> {
       debugPrint("Location not available, sending kolkata location temp");
       locationHistory.add("Location not available, sending fake location");
       wsServices.sendMsg(
+        userId!,
         "22.5726",
         "88.3639",
       );
