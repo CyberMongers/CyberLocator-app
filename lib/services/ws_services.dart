@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:socket_rocket/constants/snackbar.dart';
-import 'package:socket_rocket/models/message_model.dart';
 import 'package:web_socket_channel/io.dart';
 
 class WSServices {
@@ -40,7 +38,8 @@ class WSServices {
     // ScrollController scroll,
   ) {
     try {
-      channel = IOWebSocketChannel.connect("${_baseurl}rooms/$roomId/");
+      channel =
+        IOWebSocketChannel.connect(Uri.parse("${_baseurl}rooms/$roomId/"));
       channel.stream.listen((message) {
         debugPrint("Socket Message: $message");
         //   var jsonData = jsonDecode(message);
@@ -49,7 +48,7 @@ class WSServices {
         // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
         // scroll.jumpTo(scroll.position.maxScrollExtent);
       }, onError: (error) {
-        showSnackBar(context, "Something went wrong...change room id");
+        showSnackBar(context, "Something went wrong...check connection");
         //   Navigator.of(context).pop();
         log(error.toString());
       });
@@ -61,10 +60,10 @@ class WSServices {
 
   Future<void> sendMsg(
     // BuildContext context,
-    String lat,
+    String userId,
+	String lat,
     String long,
   ) async {
-    String userId = "12312lkj3lk";
     String message =
         '{ "message" : { "userId" : "$userId", "latitude":"$lat", "longitude" : "$long", "location": [ "$lat", "$long" ] }}';
     debugPrint(message);
