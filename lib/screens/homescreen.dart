@@ -27,13 +27,22 @@ class _RocketSocketState extends State<RocketSocket> {
     isTransmitting = false;
     // HardCoded roomId
     wsServices.connectRoomSocket(context, "123456");
-    Geolocator.isLocationServiceEnabled().then((value) async {
+    Geolocator.isLocationServiceEnabled().then((value) {
       if (!value) {
-        await Geolocator.requestPermission();
+        Geolocator.requestPermission();
         debugPrint("Requesting Location permission");
       }
     });
+    getCurrentLocation();
+  }
 
+  @override
+  void dispose() {
+    super.dispose();
+    mapController.dispose();
+  }
+
+  void getCurrentLocation() {
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
@@ -53,12 +62,6 @@ class _RocketSocketState extends State<RocketSocket> {
         mapController.move(currentLocation!, 15);
       });
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    mapController.dispose();
   }
 
   void transmitLocation() {
@@ -183,6 +186,7 @@ class _RocketSocketState extends State<RocketSocket> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
+                    getCurrentLocation();
                     isTransmitting = !isTransmitting!;
                     isTransmitting! ? startTransmitting() : stopTransmiting();
                     locationHistory.add(
