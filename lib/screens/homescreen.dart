@@ -189,6 +189,26 @@ class _RocketSocketState extends State<RocketSocket> {
           const SizedBox(
             height: 10,
           ),
+          Card(
+              color: Colors.white,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+                child: Row(
+                  children: [
+                    const Spacer(),
+                    Text(userId == null
+                        ? "Retrieving UserId..."
+                        : "UserId: $userId"),
+                    const Spacer(),
+                  ],
+                ),
+              )),
+          const SizedBox(
+            height: 10,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
