@@ -188,7 +188,7 @@ class _RocketSocketState extends State<RocketSocket> {
                               width: 80,
                               height: 80,
                               builder: (context) => const Icon(
-                                Icons.location_on,
+                                Icons.person_pin_circle_rounded,
                                 color: Colors.black,
                                 size: 40,
                               ),
