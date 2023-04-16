@@ -39,7 +39,7 @@ class WSServices {
   ) {
     try {
       channel =
-        IOWebSocketChannel.connect(Uri.parse("${_baseurl}rooms/$roomId/"));
+          IOWebSocketChannel.connect(Uri.parse("${_baseurl}rooms/$roomId/"));
       channel.stream.listen((message) {
         debugPrint("Socket Message: $message");
         //   var jsonData = jsonDecode(message);
@@ -47,6 +47,10 @@ class WSServices {
         //   MessageData(message: jsonData["message"], isme: false);
         // Provider.of<MsgProvider>(context, listen: false).addMsg(msgdata);
         // scroll.jumpTo(scroll.position.maxScrollExtent);
+      }, onDone: () {
+        debugPrint("Socket disconnected and trying to reconnecting...");
+        channel =
+            IOWebSocketChannel.connect(Uri.parse("${_baseurl}rooms/$roomId/"));
       }, onError: (error) {
         showSnackBar(context, "Something went wrong...check connection");
         //   Navigator.of(context).pop();
@@ -61,7 +65,7 @@ class WSServices {
   Future<void> sendMsg(
     // BuildContext context,
     String userId,
-	String lat,
+    String lat,
     String long,
   ) async {
     String message =

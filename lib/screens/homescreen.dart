@@ -128,6 +128,8 @@ class _RocketSocketState extends State<RocketSocket> {
     debugPrint("Start Transmitting");
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
+    	// HardCoded roomId
+        wsServices.connectRoomSocket(context, "123456");
         transmitLocation();
         getCurrentLocation();
       });
