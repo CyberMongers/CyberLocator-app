@@ -129,6 +129,7 @@ class _RocketSocketState extends State<RocketSocket> {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         transmitLocation();
+        getCurrentLocation();
       });
     });
   }
@@ -164,6 +165,19 @@ class _RocketSocketState extends State<RocketSocket> {
                     urlTemplate:
                         "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                     userAgentPackageName: 'com.kavach.socket_rocket',
+                  ),
+                  CircleLayer(
+                    circles: [
+                      CircleMarker(
+                        // hardcoded area bounds for ground personal
+                        point: LatLng(22.5310, 88.3260),
+                        color: Colors.red.withOpacity(0.5),
+                        borderColor: Colors.red,
+                        borderStrokeWidth: 1,
+                        useRadiusInMeter: true,
+                        radius: 8000,
+                      ),
+                    ],
                   ),
                   currentLocation == null
                       ? Container()
