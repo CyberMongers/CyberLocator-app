@@ -212,35 +212,48 @@ class _RocketSocketState extends State<RocketSocket> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Card(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    child: Text("RoomID: 123456"),
-                  )),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    getCurrentLocation();
-                    isTransmitting = !isTransmitting!;
-                    isTransmitting! ? startTransmitting() : stopTransmiting();
-                    locationHistory.add(
-                        "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isTransmitting! ? Colors.red : Colors.green,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
+              const Expanded(
+                flex: 1,
+                child: Card(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+                      child: Center(child: Text("RoomID: 123456")),
+                    )),
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                flex: 1,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      getCurrentLocation();
+                      isTransmitting = !isTransmitting!;
+                      isTransmitting! ? startTransmitting() : stopTransmiting();
+                      locationHistory.add(
+                          "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isTransmitting! ? Colors.red : Colors.green,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
                   ),
-                ),
-                child: Text(
-                  isTransmitting! ? "Stop Transmitting" : "Start Transmitting",
-                  style: const TextStyle(color: Colors.white),
+                  child: Text(
+                    isTransmitting!
+                        ? "Stop Transmitting"
+                        : "Start Transmitting",
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
