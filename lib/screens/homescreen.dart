@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:socket_rocket/constants/snackbar.dart';
 import 'package:socket_rocket/services/ws_services.dart';
 import 'package:socket_rocket/utils/utils.dart';
 
@@ -30,12 +31,7 @@ class _RocketSocketState extends State<RocketSocket> {
     isTransmitting = false;
     // HardCoded roomId
     wsServices.connectRoomSocket(context, "123456");
-    Geolocator.isLocationServiceEnabled().then((value) {
-      if (!value) {
-        Geolocator.requestPermission();
-        debugPrint("Requesting Location permission");
-      }
-    });
+
     getCurrentLocation();
     super.initState();
   }
@@ -55,9 +51,36 @@ class _RocketSocketState extends State<RocketSocket> {
     }
   }
 
-  }
 
-  void getCurrentLocation() {
+  void getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (context.mounted) {
+        showSnackBar(context,
+            "Location permissions are permanently denied!\nPlease enable them from settings");
+      }
+
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 100,
