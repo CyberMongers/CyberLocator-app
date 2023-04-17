@@ -153,7 +153,7 @@ class _RocketSocketState extends State<RocketSocket> {
               Expanded(
                 flex: 3,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 300),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 Widget alertBox(bool isVisible) {
   return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeIn,
       height: isVisible ? 100 : 0,
       width: double.maxFinite,
