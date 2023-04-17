@@ -19,6 +19,7 @@ class RocketSocket extends StatefulWidget {
 class _RocketSocketState extends State<RocketSocket> {
   final mapController = MapController();
   LatLng? currentLocation;
+  LatLng? safeAreaLocation;
   bool? isTransmitting = false;
   WSServices wsServices = WSServices();
   Timer? timer;
@@ -30,7 +31,10 @@ class _RocketSocketState extends State<RocketSocket> {
   void initState() {
     setUserId();
     isTransmitting = false;
-
+    // dummy safe area location
+    safeAreaLocation = LatLng(22.5310, 88.3260);
+    // fake until current location is fetched
+    currentLocation = LatLng(22.5726, 88.3639);
     getCurrentLocation();
     super.initState();
   }
@@ -95,6 +99,7 @@ class _RocketSocketState extends State<RocketSocket> {
         .listen((Position? position) {
       setState(() {
         currentLocation = LatLng(position!.latitude, position.longitude);
+        // safeAreaLocation = currentLocation;
         mapController.move(currentLocation!, 15);
       });
     });
@@ -127,6 +132,11 @@ class _RocketSocketState extends State<RocketSocket> {
     // Temporary timer for testing
     debugPrint("Start Transmitting");
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      manOutOfBound = isManOutOfBound(
+          safeAreaLocation!.latitude,
+          safeAreaLocation!.longitude,
+          currentLocation!.latitude,
+          currentLocation!.longitude);
       setState(() {
         transmitLocation();
         getCurrentLocation();
@@ -162,7 +172,7 @@ class _RocketSocketState extends State<RocketSocket> {
                   child: FlutterMap(
                     mapController: mapController,
                     options: MapOptions(
-                      center: currentLocation ?? LatLng(22.5726, 88.3639),
+                      center: currentLocation,
                       //   bounds: LatLngBounds(
                       //       LatLng(29, 77.8963), LatLng(29.8659, 77.8963)),
                     ),
@@ -177,9 +187,9 @@ class _RocketSocketState extends State<RocketSocket> {
                         circles: [
                           CircleMarker(
                             // hardcoded area bounds for ground personal
-                            point: LatLng(22.5310, 88.3260),
-                            color: Colors.red.withOpacity(0.5),
-                            borderColor: Colors.red,
+                            point: safeAreaLocation!,
+                            color: Colors.green.withOpacity(0.5),
+                            borderColor: Colors.green,
                             borderStrokeWidth: 1,
                             useRadiusInMeter: true,
                             radius: 8000,
