@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:socket_rocket/constants/snackbar.dart';
 import 'package:socket_rocket/services/ws_services.dart';
 import 'package:socket_rocket/utils/utils.dart';
+import 'package:socket_rocket/widgets/alert_widget.dart';
 
 class RocketSocket extends StatefulWidget {
   const RocketSocket({super.key});
@@ -23,14 +24,12 @@ class _RocketSocketState extends State<RocketSocket> {
   Timer? timer;
   List locationHistory = [];
   String? userId;
-
+  bool manOutOfBound = false;
 
   @override
   void initState() {
     setUserId();
     isTransmitting = false;
-    // HardCoded roomId
-    wsServices.connectRoomSocket(context, "123456");
 
     getCurrentLocation();
     super.initState();
@@ -50,7 +49,6 @@ class _RocketSocketState extends State<RocketSocket> {
       userId = await getUserId();
     }
   }
-
 
   void getCurrentLocation() async {
     bool serviceEnabled;
@@ -128,7 +126,7 @@ class _RocketSocketState extends State<RocketSocket> {
     debugPrint("Start Transmitting");
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-    	// HardCoded roomId
+        // HardCoded roomId
         wsServices.connectRoomSocket(context, "123456");
         transmitLocation();
         getCurrentLocation();
@@ -144,161 +142,198 @@ class _RocketSocketState extends State<RocketSocket> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: manOutOfBound ? Colors.red : Colors.blue.shade700,
         body: SafeArea(
             child: Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: FlutterMap(
-                mapController: mapController,
-                options: MapOptions(
-                  center: currentLocation ?? LatLng(22.5726, 88.3639),
-                  //   bounds: LatLngBounds(
-                  //       LatLng(29, 77.8963), LatLng(29.8659, 77.8963)),
-                ),
-                nonRotatedChildren: [],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    userAgentPackageName: 'com.kavach.socket_rocket',
-                  ),
-                  CircleLayer(
-                    circles: [
-                      CircleMarker(
-                        // hardcoded area bounds for ground personal
-                        point: LatLng(22.5310, 88.3260),
-                        color: Colors.red.withOpacity(0.5),
-                        borderColor: Colors.red,
-                        borderStrokeWidth: 1,
-                        useRadiusInMeter: true,
-                        radius: 8000,
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      center: currentLocation ?? LatLng(22.5726, 88.3639),
+                      //   bounds: LatLngBounds(
+                      //       LatLng(29, 77.8963), LatLng(29.8659, 77.8963)),
+                    ),
+                    nonRotatedChildren: [],
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        userAgentPackageName: 'com.kavach.socket_rocket',
                       ),
+                      CircleLayer(
+                        circles: [
+                          CircleMarker(
+                            // hardcoded area bounds for ground personal
+                            point: LatLng(22.5310, 88.3260),
+                            color: Colors.red.withOpacity(0.5),
+                            borderColor: Colors.red,
+                            borderStrokeWidth: 1,
+                            useRadiusInMeter: true,
+                            radius: 8000,
+                          ),
+                        ],
+                      ),
+                      currentLocation == null
+                          ? Container()
+                          : MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: currentLocation!,
+                                  width: 80,
+                                  height: 80,
+                                  builder: (context) => const Icon(
+                                    Icons.person_pin_circle_rounded,
+                                    color: Colors.black,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ],
                   ),
-                  currentLocation == null
-                      ? Container()
-                      : MarkerLayer(
-                          markers: [
-                            Marker(
-                              point: currentLocation!,
-                              width: 80,
-                              height: 80,
-                              builder: (context) => const Icon(
-                                Icons.person_pin_circle_rounded,
-                                color: Colors.black,
-                                size: 40,
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              alertBox(manOutOfBound),
+              manOutOfBound
+                  ? const SizedBox(
+                      height: 10,
+                    )
+                  : Container(),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Scrollbar(
+                    radius: const Radius.circular(10),
+                    child: ListView(
+                      children: [
+                        Container(
+                          height: 200,
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: locationHistory.isEmpty
+                              ? const Center(
+                                  child: const Text(
+                                      "No location transmitted yet!"))
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: locationHistory.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      leading: const Icon(
+                                          Icons.wifi_tethering_rounded),
+                                      title: Text(
+                                          locationHistory[index].toString()),
+                                    );
+                                  },
+                                ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Card(
+                            color: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10))),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0, vertical: 15),
+                              child: Row(
+                                children: [
+                                  const Spacer(),
+                                  Text(userId == null
+                                      ? "Retrieving UserId..."
+                                      : "UserId: $userId"),
+                                  const Spacer(),
+                                ],
+                              ),
+                            )),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    // cheat code to test out of bound
+                                    manOutOfBound = !manOutOfBound;
+                                  });
+                                },
+                                child: const Card(
+                                    color: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10))),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 0, vertical: 15),
+                                      child:
+                                          Center(child: Text("RoomID: 123456")),
+                                    )),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    getCurrentLocation();
+                                    isTransmitting = !isTransmitting!;
+                                    isTransmitting!
+                                        ? startTransmitting()
+                                        : stopTransmiting();
+                                    locationHistory.add(
+                                        "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isTransmitting!
+                                      ? Colors.red
+                                      : Colors.green,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 0, vertical: 15),
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                child: Text(
+                                  isTransmitting!
+                                      ? "Stop Transmitting"
+                                      : "Start Transmitting",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 15,
-          ),
-          Container(
-            height: 200,
-            width: double.maxFinite,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: locationHistory.isEmpty
-                ? const Center(
-                    child: const Text("No location transmitted yet!"))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: locationHistory.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: const Icon(Icons.wifi_tethering_rounded),
-                        title: Text(locationHistory[index].toString()),
-                      );
-                    },
-                  ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Card(
-              color: Colors.white,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Text(userId == null
-                        ? "Retrieving UserId..."
-                        : "UserId: $userId"),
-                    const Spacer(),
-                  ],
-                ),
-              )),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                flex: 1,
-                child: Card(
-                    color: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 0, vertical: 15),
-                      child: Center(child: Text("RoomID: 123456")),
-                    )),
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      getCurrentLocation();
-                      isTransmitting = !isTransmitting!;
-                      isTransmitting! ? startTransmitting() : stopTransmiting();
-                      locationHistory.add(
-                          "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isTransmitting! ? Colors.red : Colors.green,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 0, vertical: 15),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                        )
+                      ],
                     ),
-                  ),
-                  child: Text(
-                    isTransmitting!
-                        ? "Stop Transmitting"
-                        : "Start Transmitting",
-                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
             ],
-          )
-        ],
-      ),
-    )));
+          ),
+        )));
   }
 }
