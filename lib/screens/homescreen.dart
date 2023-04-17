@@ -151,8 +151,14 @@ class _RocketSocketState extends State<RocketSocket> {
           child: Column(
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
+                flex: 3,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 500),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  clipBehavior: Clip.antiAlias,
                   child: FlutterMap(
                     mapController: mapController,
                     options: MapOptions(
@@ -210,6 +216,7 @@ class _RocketSocketState extends State<RocketSocket> {
                     )
                   : Container(),
               Expanded(
+                flex: 2,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Scrollbar(
@@ -217,16 +224,16 @@ class _RocketSocketState extends State<RocketSocket> {
                     child: ListView(
                       children: [
                         Container(
-                          height: 200,
                           width: double.maxFinite,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(15),
                           ),
+                          constraints: const BoxConstraints(
+                              minHeight: 100, maxHeight: 150),
                           child: locationHistory.isEmpty
                               ? const Center(
-                                  child: const Text(
-                                      "No location transmitted yet!"))
+                                  child: Text("No location transmitted yet!"))
                               : ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: locationHistory.length,
@@ -264,68 +271,70 @@ class _RocketSocketState extends State<RocketSocket> {
                         const SizedBox(
                           height: 10,
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    // cheat code to test out of bound
-                                    manOutOfBound = !manOutOfBound;
-                                  });
-                                },
-                                child: const Card(
-                                    color: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10))),
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 0, vertical: 15),
-                                      child:
-                                          Center(child: Text("RoomID: 123456")),
-                                    )),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      // cheat code to test out of bound
+                                      manOutOfBound = !manOutOfBound;
+                                    });
+                                  },
+                                  child: const Card(
+                                      color: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10))),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 0, vertical: 15),
+                                        child: Center(
+                                            child: Text("RoomID: 123456")),
+                                      )),
+                                ),
                               ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              flex: 1,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    getCurrentLocation();
-                                    isTransmitting = !isTransmitting!;
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      getCurrentLocation();
+                                      isTransmitting = !isTransmitting!;
+                                      isTransmitting!
+                                          ? startTransmitting()
+                                          : stopTransmiting();
+                                      locationHistory.add(
+                                          "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isTransmitting!
+                                        ? Colors.red
+                                        : Colors.green,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 0, vertical: 15),
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(10)),
+                                    ),
+                                  ),
+                                  child: Text(
                                     isTransmitting!
-                                        ? startTransmitting()
-                                        : stopTransmiting();
-                                    locationHistory.add(
-                                        "------------Transmission ${isTransmitting! ? "Started" : "Stopped"}------------");
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isTransmitting!
-                                      ? Colors.red
-                                      : Colors.green,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 0, vertical: 15),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
+                                        ? "Stop Transmitting"
+                                        : "Start Transmitting",
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
-                                child: Text(
-                                  isTransmitting!
-                                      ? "Stop Transmitting"
-                                      : "Start Transmitting",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         )
                       ],
                     ),
